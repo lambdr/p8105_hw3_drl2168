@@ -37,8 +37,12 @@ data("instacart")
 ```
 
 ### Data set size, user behavior
-This data set is massive, containing `r nrow(instacart)` observations of `r ncol(instacart)` variables. Each row is a specific item from an order, in total `r instacart |> pull(order_id) |> unique() |> length()` orders are included from `r instacart |> pull(user_id) |> unique() |> length()` unique users. There appear to be no repeat orders from users in this data set, although `r instacart |> pull(reordered) |> sum()` items are items that were previously ordered by that user. This accounts for `r (instacart |> pull(reordered) |> sum()/nrow(instacart)) |> scales::percent()` of the orders, showing that only a small portion of instacart activity is captured by this data set. There are no first-time orders in this data set; this is on average order number `r instacart |> pull(order_number) |> mean() |> round(digits = 0)` for users (median order number `r instacart |> pull(order_number) |> median()` ). On average, users placed their orders `r instacart |> pull(days_since_prior_order) |> mean()` days after their previous one.
+This data set is massive, containing `r nrow(instacart)` observations of `r ncol(instacart)` variables. Each row is a specific item from an order, in total `r instacart |> pull(order_id) |> unique() |> length()` orders are included from `r instacart |> pull(user_id) |> unique() |> length()` unique users. There appear to be no repeat orders from users in this data set, although `r instacart |> pull(reordered) |> sum()` items are items that were previously ordered by that user. This accounts for `r (instacart |> pull(reordered) |> sum()/nrow(instacart)) |> scales::percent()` of the orders, showing that only a small portion of instacart activity is captured by this data set. There are no first-time orders in this data set; this is on average order number `r instacart |> pull(order_number) |> mean() |> round(digits = 0)` for users (median order number `r instacart |> pull(order_number) |> median()` ). On average, users placed their orders `r instacart |> pull(days_since_prior_order) |> mean() |> round(digits = 1)` days after their previous one.
 
 ### Aisles & products
 There are `r instacart |> pull(aisle_id) |> unique() |> length()` unique aisles included in the data set. The most ordered from aisles are the 
+```{r}
+instacart |> 
+  group_by(aisle)
+```
 
