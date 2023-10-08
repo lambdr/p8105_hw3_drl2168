@@ -8,11 +8,10 @@ output: github_document
 I will load all necessary packages here. I also am including the code that Dr. Goldsmith showed in class, to set figure color and size preferences. I have modified it slightly: I prefer `theme_bw()` over `theme_minimal()` and I may change the color scheme from the default `viridis`.
 ```{r load packages, message = FALSE}
 library(tidyverse)
+library(knitr)
 
-
-knitr::opts_chunk$set(
+opts_chunk$set(
   fig.width = 6,
-  fig.asp = .6,
   out.width = "90%"
 )
 
@@ -40,9 +39,37 @@ data("instacart")
 This data set is massive, containing `r nrow(instacart)` observations of `r ncol(instacart)` variables. Each row is a specific item from an order, in total `r instacart |> pull(order_id) |> unique() |> length()` orders are included from `r instacart |> pull(user_id) |> unique() |> length()` unique users. There appear to be no repeat orders from users in this data set, although `r instacart |> pull(reordered) |> sum()` items are items that were previously ordered by that user. This accounts for `r (instacart |> pull(reordered) |> sum()/nrow(instacart)) |> scales::percent()` of the orders, showing that only a small portion of instacart activity is captured by this data set. There are no first-time orders in this data set; this is on average order number `r instacart |> pull(order_number) |> mean() |> round(digits = 0)` for users (median order number `r instacart |> pull(order_number) |> median()` ). On average, users placed their orders `r instacart |> pull(days_since_prior_order) |> mean() |> round(digits = 1)` days after their previous one.
 
 ### Aisles & products
-There are `r instacart |> pull(aisle_id) |> unique() |> length()` unique aisles included in the data set. The most ordered from aisles are the 
-```{r}
+There are `r instacart |> pull(aisle_id) |> unique() |> length()` unique aisles included in the data set. In the following code chunk, I'll find the most ordered from aisles.
+```{r aisle orders}
 instacart |> 
-  group_by(aisle)
+  group_by(aisle) |> 
+  summarize(n_obs = n()) |> 
+  arrange(desc(n_obs)) |> 
+  head() |> 
+  kable(col.names = c("Aisle", "Number of Orders"))
+```
+The two most ordered from aisles are fresh vegetables and fresh fruits, with about 150,000 orders each. Below, you can see a plot of all aisles with more than 10,000 orders.
+
+```{r aisle plot}
+instacart |> 
+  group_by(aisle) |> 
+  summarize(n_obs = n()) |> 
+  filter(n_obs >=10000) |> 
+  ggplot(aes(y = reorder(aisle, n_obs), x = n_obs)) +
+  geom_bar(alpha = .9, stat = "identity") + 
+  labs(
+    title = "Instacart aisles with more than 10,000 orders",
+    x = "Number of orders",
+    y = "Aisle"
+  )
+```
+
+### Q1c
+
+```{r most pop items in 3 rows}
+instacart |> 
+  group_by(aisle, product_name) |> 
+  filter(aisle == "baking ingredients" | aisle == "dog food car" | aisle == "packaged vegetables fruits") |> 
+  summarize(n_obs = n())
 ```
 
