@@ -134,5 +134,36 @@ df_brfss |>
 
 ```
 
-### Excellent
+### Excellence over Time
+In the plot below, I have graphed the percentage of excellent answers to questions about Overall Health over time, from 2002 to 2010. The response are separated by state, and represent an average across the locations within the state. There appears to be a slight downward trend, but it is not immediately apparent within the noise of the data.
+
+```{r brfss spaghetti plot, message = FALSE, warning = FALSE}
+df_brfss |> 
+  filter(response == "Excellent") |> 
+  group_by(year, locationabbr) |> 
+  summarize(avg_excellent = mean(data_value)) |> 
+  ggplot(aes(x = year, y = avg_excellent, group = locationabbr, color = locationabbr)) +
+  geom_line() +
+  labs(
+    title = "Spaghetti Plot of BFRSS Excellent Scores over Time",
+    x = "Year",
+    y = "Excellent Health (%)"
+  ) + 
+  theme(legend.position = "none")
+
+```
+
+### NY State
+For the following I filtered the data to only New York responses in 2006 and 2010. I then plotted the distribution of scores over the years, coloring by County.
+```{r distribution}
+df_brfss |> 
+  filter(locationabbr == "NY" & (year == 2006 | year == 2010)) |> 
+  separate(locationdesc, into = c("state", "county"), "-") |> 
+  select(year, county, response, data_value) |> 
+  ggplot(aes(x = response,  y = data_value)) + 
+  geom_boxplot() +
+  geom_point(aes(color = county))+
+  facet_grid(. ~ year)
+
+```
 
