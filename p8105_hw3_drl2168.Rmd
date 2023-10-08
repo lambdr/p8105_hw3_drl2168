@@ -64,8 +64,7 @@ instacart |>
   )
 ```
 
-### Q1c
-
+To look more closely at the data set, I created a table examining the three most popular items from a set of aisles.
 ```{r most pop items in 3 rows, message = FALSE}
 instacart |> 
   group_by(aisle, product_name) |> 
@@ -82,6 +81,20 @@ instacart |>
     values_from = item
   ) |> 
   arrange(rank) |> 
-  kable(col.names = c("Rank", "Baking Ingredients", "Dog Food & Care", "Packaged Vegatables & Fruits"), label = "Most popular items from three aisles", caption = "Item (n)")
+  kable(col.names = c("Rank in Aisle", "Baking Ingredients", "Dog Food & Care", "Packaged Vegatables & Fruits"), caption = "Item (# of orders)")
 ```
 
+### Apples?
+```{r pink lady}
+instacart |> 
+  filter(product_name == "Pink Lady Apples" | product_name == "Coffee Ice Cream") |> 
+  group_by(product_name, order_dow) |> 
+  summarize(avg_hour = mean(order_hour_of_day)) |> 
+  pivot_wider(
+    names_from = order_dow,
+    values_from = avg_hour
+  ) |> 
+  kable(digits = 1, col.names = c("Product", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"))
+```
+
+While the majority of ordering appears concentrated in the midle of the day, coffee ice cream is bought a bit later in the afternoon, particularly during Weekdays.
