@@ -66,10 +66,22 @@ instacart |>
 
 ### Q1c
 
-```{r most pop items in 3 rows}
+```{r most pop items in 3 rows, message = FALSE}
 instacart |> 
   group_by(aisle, product_name) |> 
-  filter(aisle == "baking ingredients" | aisle == "dog food car" | aisle == "packaged vegetables fruits") |> 
-  summarize(n_obs = n())
+  filter(aisle == "baking ingredients" | aisle == "dog food care" | aisle == "packaged vegetables fruits") |> 
+  summarize(n_obs = n()) |> 
+  filter(min_rank(desc(n_obs)) <= 3) |> 
+  mutate(
+    rank = min_rank(desc(n_obs)),
+    item = paste(product_name, " (", as.character(n_obs),")", sep = "")
+         ) |> 
+  select(-product_name, -n_obs) |> 
+  pivot_wider(
+    names_from = aisle,
+    values_from = item
+  ) |> 
+  arrange(rank) |> 
+  kable(col.names = c("Rank", "Baking Ingredients", "Dog Food & Care", "Packaged Vegatables & Fruits"), label = "Most popular items from three aisles", caption = "Item (n)")
 ```
 
