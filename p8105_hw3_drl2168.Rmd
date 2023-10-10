@@ -200,7 +200,9 @@ df_nhanes <- left_join(df_subjects, df_accel, by = join_by(seqn)) |>
     values_to = "acceleration",
     names_prefix = "min"
   ) |> 
-  mutate(min = as.numeric(min)) |> 
+  mutate(min = as.numeric(min),
+        education = fct_relevel(education, c("incomplete_hs", "complete_hs", "post_hs"))
+  ) |> 
   filter(age >= 21) |> 
   drop_na(education)
 ```
@@ -232,3 +234,19 @@ df_nhanes |>
   
 ```
 
+About half of the participants have post-secondary education, and about a quarter each have only high school or incomplete high school education. The amount of males and females are approximately balanced, although there are about 50% more males than females with only high school diplomas. To further examine these demographic groups, and take into account age, I will create a figure below.
+
+```{r age histogram by demographics}
+df_nhanes |> 
+  filter(min == 1) |> 
+  ggplot(aes(x = age)) +
+  geom_histogram(binwidth = 5) + 
+  facet_grid(sex ~ education) + 
+  labs(
+    title = "NHANES Participant Ages",
+    x = "Age (years)",
+    y = "Number of Participants"
+  )
+```
+
+Participants without post-secondary education tend to be spread out more in age, while participants with post-secondary education tend to be younger, although those distriubtions are positively skewed.
