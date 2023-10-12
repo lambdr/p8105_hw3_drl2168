@@ -9,6 +9,7 @@ I will load all necessary packages here. I also am including the code that Dr. G
 ```{r load packages, message = FALSE}
 library(tidyverse)
 library(knitr)
+library(p8105.datasets)
 
 opts_chunk$set(
   fig.width = 6,
@@ -31,7 +32,6 @@ scale_fill_discrete = scale_fill_viridis_d
 # Problem 1
 ```{r instacart data import}
 # Load data from the provided package
-library(p8105.datasets)
 data("instacart")
 ```
 
@@ -131,8 +131,9 @@ df_brfss |>
   summarize(n_site = n_distinct(locationdesc)) |> 
   filter(n_site >= 7) |> 
   pull(locationabbr)
-
 ```
+
+There are now 14 states with 7 or more sites, 8 more than in 2002. Of note, 9 states have entered this group, and Connecticut has actually decreased down to 5 sites.
 
 ### Excellence over Time
 In the plot below, I have graphed the percentage of excellent answers to questions about Overall Health over time, from 2002 to 2010. The response are separated by state, and represent an average across the locations within the state. There appears to be a slight downward trend, but it is not immediately apparent within the noise of the data.
@@ -177,13 +178,13 @@ df_subjects <- read_csv("data/nhanes_covar.csv", skip = 4) |>
   janitor::clean_names() |> 
   mutate(
     sex = case_match(sex,
-                     1 ~ "male",
-                     2 ~ "female"
+                     1 ~ "Male",
+                     2 ~ "Female"
                      ),
     education = case_match(education,
-                           1 ~ "incomplete_hs",
-                           2 ~ "complete_hs",
-                           3 ~ "post_hs"
+                           1 ~ "Incomplete High School",
+                           2 ~ "Complete High School",
+                           3 ~ "Post High School"
                            )) 
 
 # Import and tidy accelerometer info
@@ -201,7 +202,7 @@ df_nhanes <- left_join(df_subjects, df_accel, by = join_by(seqn)) |>
     names_prefix = "min"
   ) |> 
   mutate(min = as.numeric(min),
-        education = fct_relevel(education, c("incomplete_hs", "complete_hs", "post_hs"))
+        education = fct_relevel(education, c("Incomplete High School", "Complete High School", "Post High School"))
   ) |> 
   filter(age >= 21) |> 
   drop_na(education)
@@ -220,17 +221,9 @@ df_nhanes |>
     names_from = sex,
     values_from = n_subj
   ) |> 
-  mutate(
-    total = female + male,
-    education = case_match(
-      education,
-      "complete_hs" ~ "Complete High School",
-      "incomplete_hs" ~ "Incomplete High School",
-      "post_hs" ~ "Post High School"),
-    education = fct_relevel(education, c("Incomplete High School", "Complete High School", "Post High School")),
-  ) |> 
+  mutate(Total = Female + Male)|> 
   arrange(education) |> 
-  kable(col.names = c("Education", "Female", "Male", "Total"))
+  kable()
   
 ```
 
