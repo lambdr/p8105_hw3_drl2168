@@ -85,7 +85,7 @@ instacart |>
 ```
 
 ### Apples & Ice Cream
-```{r pink lady}
+```{r pink lady, message = FALSE}
 instacart |> 
   filter(product_name == "Pink Lady Apples" | product_name == "Coffee Ice Cream") |> 
   group_by(product_name, order_dow) |> 
@@ -97,7 +97,7 @@ instacart |>
   kable(digits = 1, col.names = c("Product", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"))
 ```
 
-While the majority of ordering appears concentrated in the midle of the day, coffee ice cream is bought a bit later in the afternoon, particularly during Weekdays.
+While the majority of ordering appears concentrated in the middle of the day, coffee ice cream is bought a bit later in the afternoon, particularly during Weekdays.
 
 
 # Problem 2
@@ -111,7 +111,7 @@ df_brfss = brfss_smart2010|>
 ```
 
 ### Number of sites
-I will look at the number of sites per state.
+I will look at the number of sites per state in 2002.
 ```{r number of states 2002}
 df_brfss |> 
   filter(year == 2002) |> 
@@ -122,7 +122,7 @@ df_brfss |>
 
 ```
 
-These 6 states have 7 or more locations sampled within them in 2002, whereas there were 14 states that had 7 or more locations in 2010:
+These 6 states have 7 or more locations sampled within them in 2002. I will repeat this code chunk, now looking at states in 2010.
 
 ```{r number of states 2010}
 df_brfss |> 
@@ -133,7 +133,7 @@ df_brfss |>
   pull(locationabbr)
 ```
 
-There are now 14 states with 7 or more sites, 8 more than in 2002. Of note, 9 states have entered this group, and Connecticut has actually decreased down to 5 sites.
+There are now 14 states with 7 or more sites, 8 more than in 2002. Of note, 9 states have entered this group, and Connecticut has actually decreased the number of sites it had, down to 5 sites.
 
 ### Excellence over Time
 In the plot below, I have graphed the percentage of excellent answers to questions about Overall Health over time, from 2002 to 2010. The response are separated by state, and represent an average across the locations within the state. There appears to be a slight downward trend, but it is not immediately apparent within the noise of the data.
@@ -155,7 +155,7 @@ df_brfss |>
 ```
 
 ### NY State
-For the following I filtered the data to only New York responses in 2006 and 2010. I then plotted the distribution of scores over the years, coloring by County.
+For the following I filtered the data to only New York responses in 2006 and 2010. I then plotted the distribution of scores over the year using boxplots.
 ```{r distribution}
 df_brfss |> 
   filter(locationabbr == "NY" & (year == 2006 | year == 2010)) |> 
@@ -163,15 +163,21 @@ df_brfss |>
   select(year, county, response, data_value) |> 
   ggplot(aes(x = response,  y = data_value)) + 
   geom_boxplot() +
-  geom_point(aes(color = county))+
-  facet_grid(. ~ year)
+  facet_grid(. ~ year) +
+  labs(
+    title = "Distributions of Response over Time",
+    x = "Response",
+    y = "Respondents (%)"
+  )
 
 ```
 
-# Problem 3
-I will import `nhanes_covar.csv`, then `nhanes_accel.csv`, and then combine the two after some preliminary tidying. In `nhanes_covar.csv`, I changed variable names to snake case and recoded `sex` and `education` to character variables. The `bmi` and `education` variables are missing data for some subjects, but the missing data were appropriately labelled as `NA` so I didn't need to make any changes there.
+While in 2006, the 'good' and 'very good' responses look quite similar, though in 2010 'very good' is higher and 'good' is lower across counties. The worse off scores appear to have decreased a bit in some counties, but their median percents have remained about the same.
 
-The only modification I needed to make to `nhanes_accel.csv` was changing the `seqn` indicator variable name to be lower case. I think that R is handling the scientific notation of some columns correctly. If this proves to be a problem, I will address it later.
+# Problem 3
+I will import `nhanes_covar.csv`, `nhanes_accel.csv`, and then combine the two after some preliminary tidying. In `nhanes_covar.csv`, I changed variable names to snake case and recoded `sex` and `education` to character variables. The `bmi` and `education` variables are missing data for some subjects, but the missing data were appropriately labelled as `NA` so I didn't need to make any changes there.
+
+The only modification I needed to make to `nhanes_accel.csv` was changing the `seqn` indicator variable name to be lower case. I think that R is handling the scientific notation of some columns correctly. If this proves to be a problem, I will address it later. Rather than use `snake_case` for the variable levels, I'm leaving them capitalized to make the tables and plots for this problem more reader-friendly.
 ```{r import nhanes data, message = FALSE}
 # Import and tidy covariate info
 df_subjects <- read_csv("data/nhanes_covar.csv", skip = 4) |> 
@@ -208,7 +214,7 @@ df_nhanes <- left_join(df_subjects, df_accel, by = join_by(seqn)) |>
   drop_na(education)
 ```
 
-This final dataframe contains `r nrow(df_nhanes)` observations of `r ncol(df_nhanes)` variables. It records basic demographic information, such as `age`, `sex`, and `education` along with `bmi` for `r df_nhanes |> pull(seqn) |> unique() |> length()` subjects of the NHANES study. It then tracks a person's movement using an accelerometer every minute over the course of one day.
+This final dataframe contains `r nrow(df_nhanes)` observations of `r ncol(df_nhanes)` variables. It records basic demographic information, such as `age`, `sex`, and `education` along with `bmi` for `r df_nhanes |> pull(seqn) |> unique() |> length()` subjects of the NHANES study. It then tracks a person's movement using an accelerometer every minute over the course of one day. It also treats `education` as a factor variable, to rationally order the following tables and plots.
 
 ### Demographics
 In order to better understand the participants in this study, I created a basic table of participants by `sex` and `education` variables.
@@ -278,7 +284,8 @@ df_nhanes |>
   geom_line(alpha = 0.4) +
   geom_smooth(alpha = 0.7, se = FALSE) + 
   facet_grid(education ~ .) +
-    labs(
+  scale_x_continuous(breaks = c(0, 6, 12, 18, 24)) +
+  labs(
     title = "NHANES Daily Movement",
     x = "Time (hours)",
     y = "Total Movement (MIMS Units)",
@@ -286,3 +293,4 @@ df_nhanes |>
   )
 ```
 
+In the plot above, `sex` does not appear to play a large role in determining activity; both female and male participants were similarly active. It does look like in the higher education levels, females are a bit more active than males. Participants without a high school diploma tend to have peak activity in the morning and then decrease more sharply to the evening, while the other education strata are more stable throughout the day, becore declining after 6:00pm.
